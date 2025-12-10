@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Leaderboard & Project Tracker</title>
+    <style>
+        /*
+        * ----------------------------------
+        * CSS STYLES
+        * ----------------------------------
+        */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #004d40; /* Dark teal */
+            border-bottom: 2px solid #004d40;
+            padding-bottom: 5px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows sections to stack on small screens */
+        }
+
+        .leaderboard-section, .projects-section {
+            flex: 1;
+            min-width: 300px; /* Ensures they don't get too narrow */
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #e0f2f1; /* Light teal background for headers */
+            color: #004d40;
+            font-weight: bold;
+        }
+
+        /* Leaderboard Specific Styles */
+        .highlighted {
+            background-color: #ffcc80 !important; /* Orange-ish highlight */
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* Project Status Colors */
+        .status-cell.Complete {
+            background-color: #c8e6c9; /* Light green */
+            color: #1b5e20; /* Dark green text */
+        }
+
+        .status-cell.InProgress {
+            background-color: #fff9c4; /* Light yellow */
+            color: #fbc02d; /* Dark yellow text */
+        }
+        
+        .status-cell.Planned {
+            background-color: #b3e5fc; /* Light blue */
+            color: #01579b; /* Dark blue text */
+        }
+        
+    </style>
+</head>
+<body>
+
+    <h1>📊 Team Points Leaderboard & Project Tracker</h1>
+    <div class="container">
+        <div class="leaderboard-section">
+            <h2>🥇 Leaderboard</h2>
+            <p>Click a person's name to **toggle the research project highlight**.</p>
+            <table id="leaderboardTable">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="projects-section">
+            <h2>🔬 Project Summary</h2>
+            <table id="projectsTable">
+                <thead>
+                    <tr>
+                        <th>Project Status</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        /*
+        * ----------------------------------
+        * JAVASCRIPT LOGIC
+        * ----------------------------------
+        */
+
+        // 1. LEADERBOARD DATA
+        // This is where you would update your data
+        let leaderboardData = [
+            { name: "Alice Johnson", points: 1500, hasProject: true },
+            { name: "Bob Smith", points: 1250, hasProject: false },
+            { name: "Charlie Brown", points: 1100, hasProject: true },
+            { name: "Dana White", points: 950, hasProject: false },
+            { name: "Eve Davis", points: 700, hasProject: true }
+        ];
+
+        // Sort the data by points in descending order
+        leaderboardData.sort((a, b) => b.points - a.points);
+
+        // Function to render the leaderboard table
+        function renderLeaderboard() {
+            const tableBody = document.querySelector('#leaderboardTable tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            leaderboardData.forEach((person, index) => {
+                const row = tableBody.insertRow();
+                // Apply the 'highlighted' class if hasProject is true
+                if (person.hasProject) {
+                    row.classList.add('highlighted');
+                }
+
+                row.insertCell().textContent = index + 1; // Rank
+                
+                // Name Cell: This is the interactive cell
+                const nameCell = row.insertCell();
+                nameCell.textContent = person.name;
+                nameCell.style.cursor = 'pointer'; // Make it look clickable
+                
+                // Add click listener to toggle the highlight
+                nameCell.onclick = () => toggleProjectStatus(person.name, row);
+                
+                row.insertCell().textContent = person.points;
+            });
+        }
+
+        // Function to toggle the hasProject status and re-render
+        function toggleProjectStatus(name, rowElement) {
+            const person = leaderboardData.find(p => p.name === name);
+            if (person) {
+                // Toggle the status in the data
+                person.hasProject = !person.hasProject;
+                
+                // Toggle the class on the row element
+                rowElement.classList.toggle('highlighted');
+            }
+        }
+
+        // 2. PROJECT DATA
+        // Separate data for tracking project status
+        const projectData = {
+            Complete: 5,
+            InProgress: 3,
+            Planned: 2
+        };
+
+        // Function to render the project summary table
+        function renderProjectSummary() {
+            const tableBody = document.querySelector('#projectsTable tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            // Iterate over the keys (status names) in the projectData object
+            for (const status in projectData) {
+                const row = tableBody.insertRow();
+                
+                // Status Cell
+                const statusCell = row.insertCell();
+                statusCell.textContent = status;
+                // Add the class for background color
+                statusCell.classList.add('status-cell', status.replace(/\s/g, '')); 
+                
+                // Count Cell
+                row.insertCell().textContent = projectData[status];
+            }
+        }
+
+        // Initialize the tables when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLeaderboard();
+            renderProjectSummary();
+        });
+
+    </script>
+
+</body>
+</html>
