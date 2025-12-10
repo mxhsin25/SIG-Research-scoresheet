@@ -78,6 +78,22 @@
             background-color: #b3e5fc; /* Light blue */
             color: #01579b; /* Dark blue text */
         }
+
+        /* Admin Mode Button Style */
+        #adminModeButton {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #004d40;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #adminModeButton:disabled {
+            background-color: #ccc;
+            cursor: default;
+        }
         
     </style>
 </head>
@@ -87,7 +103,12 @@
     <div class="container">
         <div class="leaderboard-section">
             <h2>🥇 Leaderboard</h2>
-            <p>Click a person's name to **toggle the research project highlight**.</p>
+            
+            <div style="margin-bottom: 15px; padding: 10px; border: 1px dashed #004d40;">
+                <button id="adminModeButton">Activate Admin Mode</button>
+                <span id="adminStatus" style="margin-left: 10px; font-weight: bold; color: red;">(Disabled)</span>
+            </div>
+            <p id="toggleInstruction">Click a person's name to **toggle the research project highlight** (requires Admin Mode).</p>
             <table id="leaderboardTable">
                 <thead>
                     <tr>
@@ -123,8 +144,11 @@
         * ----------------------------------
         */
 
+        // --- CONFIGURATION ---
+        const ADMIN_PASSWORD = "adminpass123"; // *** CHANGE THIS PASSWORD! ***
+        let isAdminMode = false;
+
         // 1. LEADERBOARD DATA
-        // This is where you would update your data
         let leaderboardData = [
             { name: "Alice Johnson", points: 1500, hasProject: true },
             { name: "Bob Smith", points: 1250, hasProject: false },
@@ -133,17 +157,15 @@
             { name: "Eve Davis", points: 700, hasProject: true }
         ];
 
-        // Sort the data by points in descending order
         leaderboardData.sort((a, b) => b.points - a.points);
 
-        // Function to render the leaderboard table
+        // --- CORE RENDERING FUNCTION ---
         function renderLeaderboard() {
             const tableBody = document.querySelector('#leaderboardTable tbody');
             tableBody.innerHTML = ''; // Clear existing rows
 
             leaderboardData.forEach((person, index) => {
                 const row = tableBody.insertRow();
-                // Apply the 'highlighted' class if hasProject is true
                 if (person.hasProject) {
                     row.classList.add('highlighted');
                 }
@@ -153,59 +175,84 @@
                 // Name Cell: This is the interactive cell
                 const nameCell = row.insertCell();
                 nameCell.textContent = person.name;
-                nameCell.style.cursor = 'pointer'; // Make it look clickable
                 
-                // Add click listener to toggle the highlight
-                nameCell.onclick = () => toggleProjectStatus(person.name, row);
+                // Add click listener ONLY if Admin Mode is active
+                if (isAdminMode) {
+                    nameCell.style.cursor = 'pointer'; // Make it look clickable
+                    nameCell.onclick = () => toggleProjectStatus(person.name, row);
+                } else {
+                    nameCell.style.cursor = 'default'; // Remove pointer cursor when disabled
+                    nameCell.onclick = null; // Remove any previous click handler
+                }
                 
                 row.insertCell().textContent = person.points;
             });
         }
 
-        // Function to toggle the hasProject status and re-render
+        // --- TOGGLE FUNCTION (Restricted) ---
         function toggleProjectStatus(name, rowElement) {
+            if (!isAdminMode) {
+                // This alert should ideally not be triggered if the click handler is correctly removed
+                alert("Error: You must activate Admin Mode to change project assignments.");
+                return;
+            }
+
             const person = leaderboardData.find(p => p.name === name);
             if (person) {
-                // Toggle the status in the data
                 person.hasProject = !person.hasProject;
-                
-                // Toggle the class on the row element
                 rowElement.classList.toggle('highlighted');
+                // Note: If you need to re-sort after every change, you would call renderLeaderboard() here.
             }
         }
 
-        // 2. PROJECT DATA
-        // Separate data for tracking project status
+        // --- ADMIN MODE LOGIC ---
+        function activateAdminMode() {
+            const inputPassword = prompt("Enter Admin Password:");
+            
+            if (inputPassword === ADMIN_PASSWORD) {
+                isAdminMode = true;
+                
+                // Update UI status
+                document.getElementById('adminStatus').textContent = "(Enabled)";
+                document.getElementById('adminStatus').style.color = 'green';
+                document.getElementById('adminModeButton').textContent = "Admin Mode Activated";
+                document.getElementById('adminModeButton').disabled = true;
+                
+                // Re-render the table to attach the click handlers and enable interaction
+                renderLeaderboard();
+                alert("Admin Mode Activated! You can now toggle project assignments by clicking names.");
+            } else {
+                alert("Incorrect Password. Admin Mode activation failed.");
+            }
+        }
+
+        // 2. PROJECT DATA (unchanged)
         const projectData = {
             Complete: 5,
             InProgress: 3,
             Planned: 2
         };
 
-        // Function to render the project summary table
         function renderProjectSummary() {
             const tableBody = document.querySelector('#projectsTable tbody');
-            tableBody.innerHTML = ''; // Clear existing rows
+            tableBody.innerHTML = ''; 
 
-            // Iterate over the keys (status names) in the projectData object
             for (const status in projectData) {
                 const row = tableBody.insertRow();
-                
-                // Status Cell
                 const statusCell = row.insertCell();
                 statusCell.textContent = status;
-                // Add the class for background color
                 statusCell.classList.add('status-cell', status.replace(/\s/g, '')); 
-                
-                // Count Cell
                 row.insertCell().textContent = projectData[status];
             }
         }
 
-        // Initialize the tables when the page loads
+        // Initialize the tables and attach the admin button listener
         document.addEventListener('DOMContentLoaded', () => {
             renderLeaderboard();
             renderProjectSummary();
+            
+            // Attach the password function to the new button
+            document.getElementById('adminModeButton').onclick = activateAdminMode;
         });
 
     </script>
