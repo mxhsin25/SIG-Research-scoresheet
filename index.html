@@ -145,10 +145,11 @@
         */
 
         // --- CONFIGURATION ---
-        const ADMIN_PASSWORD = "adminpass123"; // *** CHANGE THIS PASSWORD! ***
+        // IMPORTANT: This password controls the Admin Mode toggle functionality.
+        const ADMIN_PASSWORD = "secretpassword789"; 
         let isAdminMode = false;
 
-        // 1. LEADERBOARD DATA
+        // 1. LEADERBOARD DATA (Edit this array to change names and points)
         let leaderboardData = [
             { name: "Alice Johnson", points: 1500, hasProject: true },
             { name: "Bob Smith", points: 1250, hasProject: false },
@@ -191,17 +192,17 @@
 
         // --- TOGGLE FUNCTION (Restricted) ---
         function toggleProjectStatus(name, rowElement) {
+            // Primary check (though click handler is only attached in admin mode)
             if (!isAdminMode) {
-                // This alert should ideally not be triggered if the click handler is correctly removed
                 alert("Error: You must activate Admin Mode to change project assignments.");
                 return;
             }
 
             const person = leaderboardData.find(p => p.name === name);
             if (person) {
+                // Toggle the project assignment status
                 person.hasProject = !person.hasProject;
                 rowElement.classList.toggle('highlighted');
-                // Note: If you need to re-sort after every change, you would call renderLeaderboard() here.
             }
         }
 
@@ -226,7 +227,7 @@
             }
         }
 
-        // 2. PROJECT DATA (unchanged)
+        // 2. PROJECT DATA (Edit this object to update project counts)
         const projectData = {
             Complete: 5,
             InProgress: 3,
